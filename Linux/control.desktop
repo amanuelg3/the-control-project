@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon[en_US]=/etc/control/icon.png
+Name[en_US]=Control
+Exec=/etc/control/start.sh
+Name=Control
+Icon=/etc/control/icon.png
