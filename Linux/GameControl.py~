@@ -40,7 +40,7 @@ while True:
 	msg = cs.recv(4096).decode('ascii').strip()
 	cs.send("110000")
 	msg = cs.recv(4096).decode('ascii').strip()
-	while not msg == "QUITCONTROLLER":
+	while not msg == "":
 		try:
 			if msg[:3] == "BTN":
 				d.emit(events[int(msg[3:4])+1],int(msg.split(":")[1]))

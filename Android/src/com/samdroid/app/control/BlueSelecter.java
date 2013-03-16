@@ -90,7 +90,7 @@ public class BlueSelecter extends Activity {
 			adp = msg2[1].split("~");
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,adn);
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Pick A Controler");
+			builder.setTitle("Pick A Controller");
 			builder.setAdapter(adapter, new DialogInterface.OnClickListener(){
 	               public void onClick(DialogInterface dialog, int which) {
 	            	  cd = adp[which];
@@ -113,7 +113,7 @@ public class BlueSelecter extends Activity {
 			if (tryA) {
 				createDialog(baddr,false);
 			} else {
-				Toast.makeText(getApplicationContext(), "Unable to get controlers", Toast.LENGTH_LONG).show();
+				Toast.makeText(getApplicationContext(), "Unable to get controllers", Toast.LENGTH_LONG).show();
 			}
 		}
 		

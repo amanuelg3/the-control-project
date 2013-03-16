@@ -40,7 +40,7 @@ while True:
 	msg = cs.recv(4096).decode('ascii').strip()
 	cs.send("110000")
 	msg = cs.recv(4096).decode('ascii').strip()
-	while not msg == "":
+	while not msg == "QUITCONTROLLER":
 		try:
 			if msg[:4] == "Acc:":
 				l = msg.split(":")

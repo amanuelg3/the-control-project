@@ -38,7 +38,7 @@ while True:
 	msg = cs.recv(4096).decode('ascii').strip()
 	cs.send("000000")
 	msg = cs.recv(4096).decode('ascii').strip()
-	while not msg == "":
+	while not msg == "QUITCONTROLLER":
 		try:
 			print msg
 			if msg[:5] == "Play:":

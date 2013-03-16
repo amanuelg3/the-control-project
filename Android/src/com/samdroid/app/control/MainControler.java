@@ -466,7 +466,7 @@ public class MainControler extends Activity implements SensorEventListener {
 	protected void onStop() {
 		super.onStop();
 		try {
-			out.write("".getBytes());
+			out.write("QUITCONTROLLER".getBytes());
 			in.close();
 			out.close();
 			s.close();
