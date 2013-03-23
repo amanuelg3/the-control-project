@@ -15,7 +15,7 @@
 
 import bluetooth as bt
 import pynotify as pn
-import threading, socket, select, os
+import threading, thread, socket, select, os
 
 localApps = []
 pn.init("Control")
@@ -23,6 +23,38 @@ n = pn.Notification("Control Server Running", "You can now connect from your dev
 n.set_timeout(-1)
 n.show()
 
+def connection(cs):
+	msg = cs.recv(4096).decode('UTF-8').strip()
+	try:
+		if msg == "CL":
+			msg = ""
+			msg2 = ""
+			for i in localApps:
+				msg = msg + i[0] + "~"
+				msg2 = msg2 + str(i[1]) + "~"
+			cs.send((msg+"_"+msg2+"@").encode('UTF-8'))
+			print(msg+"_"+msg2+"@")
+			cs.close()
+		elif msg[0:3] == "GL:":
+			s = socket.socket(socket.AF_INET, 	socket.SOCK_STREAM)
+			s.connect((socket.gethostbyname	(socket.gethostname()), int(msg[3:])))	
+			while True:
+				read, write, err = select.select([s,cs],[],[],60)
+				if cs in read:
+					msg = cs.recv(4096).decode('UTF-8').strip()
+					s.send(msg)
+				if s in read:
+					msg = s.recv(4096).decode('UTF-8').strip()
+					if not msg == "":
+						cs.send("@"+msg+"@")
+					
+	except IOError:
+		print "IOE: Stopping Client"
+	cs.close()
+	try:
+		s.close()
+	except NameError:
+		pass
 
 class localThread(threading.Thread):
 	def __init__(self):
@@ -64,46 +96,7 @@ print("Now listing")
 while True: # Main server loop
 	(cs, info) = bs.accept() #cs = cient socket
 	print("Accepted connection from "+str(info)+" with the content:")
-	msg = cs.recv(4096).decode('UTF-8').strip()
-	try:
-		if msg == "CL":
-			msg = ""
-			msg2 = ""
-			for i in localApps:
-				msg = msg + i[0] + "~"
-				msg2 = msg2 + str(i[1]) + "~"
-			cs.send((msg+"_"+msg2+"@").encode('UTF-8'))
-			print(msg+"_"+msg2+"@")
-			cs.close()
-		elif msg[0:3] == "GL:":
-			s = socket.socket(socket.AF_INET, 	socket.SOCK_STREAM)
-			s.connect((socket.gethostbyname	(socket.gethostname()), int(msg[3:])))
-	
-			for i in range(3):
-				msg = s.recv(4096).decode	('UTF-8').strip()
-				print("@"+msg+"@")
-				cs.send("@"+msg+"@")
-				msg = cs.recv(4096).decode	('UTF-8').strip()
-				print(msg)
-				s.send(msg)		
-				
-			while True:
-				read, write, err = select.select([s,cs],[],[],60)
-				if cs in read:
-					msg = cs.recv(4096).decode('UTF-8').strip()
-					s.send(msg)
-				if s in read:
-					msg = s.recv(4096).decode('UTF-8').strip()
-					if not msg == "":
-						cs.send("@"+msg+"@")
-					
-	except IOError:
-		print "IOE: Stopping Client"
-	cs.close()
-	try:
-		s.close()
-	except NameError:
-		pass
+	thread.start_new_thread(connection, (cs))
 
 bs.close() #Close the socket
 thread.stop()
