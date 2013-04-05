@@ -32,15 +32,15 @@ s.listen(1)
 while True:
 	SO = True
 	(cs, addr) = s.accept()
-	cs.send("1")
-	msg = cs.recv(4096).decode('ascii').strip()
-	cs.send("1_0_1_3_-1_-1_1~7_1_0_10_Play:_-1_-2_2~1_1_0_0_-1_-2_1~7_2_0_11_Prev:_-2_-2_1~7_2_0_15_Rewd:_-2_-2_1~7_2_0_2_Ffor:_-2_-2_1~7_2_0_5_Next:_-2_-2_1~1_1_0_0_-1_-2_2~7_3_0_19_VolD:_-2_-2_1~7_3_0_17_Stop:_-2_-2_1~7_3_0_20_VolU:_-2_-2_1")
-	msg = cs.recv(4096).decode('ascii').strip()
-	cs.send("000000")
-	msg = cs.recv(4096).decode('ascii').strip()
 	while not msg == "QUITCONTROLLER":
 		try:
-			print msg
+			if msg == "SENDLAYOUT":
+				cs.send("1")
+				msg = cs.recv(4096).decode('ascii').strip()
+				cs.send("1_0_1_3_-1_-1_1~7_1_0_10_Play:_-1_-2_2~1_1_0_0_-1_-2_1~7_2_0_11_Prev:_-2_-2_1~7_2_0_15_Rewd:_-2_-2_1~7_2_0_2_Ffor:_-2_-2_1~7_2_0_5_Next:_-2_-2_1~1_1_0_0_-1_-2_2~7_3_0_19_VolD:_-2_-2_1~7_3_0_17_Stop:_-2_-2_1~7_3_0_20_VolU:_-2_-2_1")
+				msg = cs.recv(4096).decode('ascii').strip()
+				cs.send("000000")
+				msg = cs.recv(4096).decode('ascii').strip()
 			if msg[:5] == "Play:":
 				d.emit(u.KEY_PLAYPAUSE,int(msg[5:6]))
 			if msg[:5] == "Prev:":

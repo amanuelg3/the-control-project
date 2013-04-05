@@ -34,14 +34,15 @@ s.listen(1)
 while True:
 	su = False
 	(cs, addr) = s.accept()
-	cs.send("1")
-	msg = cs.recv(4096).decode('ascii').strip()
-	cs.send("0_0_\n\n\nLeft\n\n\n_L:_-2_-2_1~1_0_1_3_-2_-2_0.1~0_1_\n\n _U:_-1_-2_0~0_1_\n\n _D:_-1_-2_0~0_0_\n\n\nRight\n\n\n_R:_-2_-2_1")
-	msg = cs.recv(4096).decode('ascii').strip()
-	cs.send("110000")
-	msg = cs.recv(4096).decode('ascii').strip()
 	while not msg == "QUITCONTROLLER":
 		try:
+			if msg == "SENDLAYOUT":
+				cs.send("1")
+				msg = cs.recv(4096).decode('ascii').strip()
+				cs.send("0_0_\n\n\nLeft\n\n\n_L:_-2_-2_1~1_0_1_3_-2_-2_0.1~0_1_\n\n _U:_-1_-2_0~0_1_\n\n _D:_-1_-2_0~0_0_\n\n\nRight\n\n\n_R:_-2_-2_1")
+				msg = cs.recv(4096).decode('ascii').strip()
+				cs.send("110000")
+				msg = cs.recv(4096).decode('ascii').strip()
 			if msg[:4] == "Acc:":
 				l = msg.split(":")
 				if su:

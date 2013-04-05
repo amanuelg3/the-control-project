@@ -214,8 +214,9 @@ public class MainControler extends Activity implements SensorEventListener {
 			s = d.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
 			s.connect();
 			out = s.getOutputStream();
-			out.write(("GL:"+cd).getBytes("UTF-8"));
 			in = s.getInputStream();
+			out.write(("GL:"+cd).getBytes("UTF-8"));
+			safeRead();
 			setupLayout();
 			new Thread(new Runnable() {
 				@Override
@@ -226,7 +227,6 @@ public class MainControler extends Activity implements SensorEventListener {
 							String[] msgL = msg.split("_");
 							if (Integer.parseInt(msg) == -1) {
 								//Log.i("Building", "Layout");
-								out.write("SEND".getBytes("UTF-8"));
 								MainControler.this.LayoutMade = false;
 								MainControler.this.runOnUiThread(new Runnable() {
 									public void run(){
@@ -320,6 +320,8 @@ public class MainControler extends Activity implements SensorEventListener {
 	private void setupLayout() {
 		setContentView(R.layout.main_controler);
 		try {
+			out.write("SENDLAYOUT".getBytes("UTF-8"));
+			
 			Orientation = Integer.parseInt(safeRead());
 			setRequestedOrientation(Orientation);//Land = 0  Port = 1
 			out.write("SetOrentation".getBytes("UTF-8"));
@@ -466,14 +468,12 @@ public class MainControler extends Activity implements SensorEventListener {
 	protected void onStop() {
 		super.onStop();
 		try {
-			out.write("QUITCONTROLLER".getBytes());
-			in.close();
-			out.close();
-			s.close();
+			out.write("ONSTOP".getBytes());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		finish();
 		CONNECTED = false;
 	}
 	protected void onStart() {
@@ -516,12 +516,15 @@ public class MainControler extends Activity implements SensorEventListener {
 	public void onDestroy() {
 		super.onDestroy();
 		try {
+			in.close();
 			out.close();
 			s.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		finish();
+		CONNECTED = false;
 	}
 	
     public void onSensorChanged(SensorEvent event) {
