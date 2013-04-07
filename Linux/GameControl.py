@@ -13,13 +13,10 @@
 #You should have received a copy of the GNU General Public License
 #along with Control.  If not, see <http://www.gnu.org/licenses/>.
 
-import socket, time
+import socket, time, thread
 import uinput as u
 
 time.sleep(1)
-
-events = (u.ABS_X,u.ABS_Y,u.BTN_1,u.BTN_2,u.BTN_3,u.BTN_4,u.BTN_5,u.BTN_6)
-d = u.Device(events)
 
 inform = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 inform.connect((socket.gethostbyname(socket.gethostname()),3334))
@@ -28,18 +25,16 @@ msg = inform.recv(4096).decode('ascii').strip()
 print "|"+msg+"|  <-- Port No."
 inform.close()
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((socket.gethostbyname(socket.gethostname()),int(msg)))
-s.listen(1)
-while True:
-	SO = True
-	(cs, addr) = s.accept()
+def connection(cs):
+  SO = True
 	cs.send("0")
 	msg = cs.recv(4096).decode('ascii').strip()
 	cs.send("1_0_1_3_-2_-1_1~3_1_1_Sensor On_Sensor Off_S:_-2_-2_0~4_1_DPad:_-1_-1_1~1_0_0_5_-2_-1_1.5~1_2_1_17_-1_-1_1~1_2_1_17_-1_-1_1~0_4_1_BTN1:_-1_-1_1~0_4_2_BTN2:_-1_-1_1~0_4_3_BTN3:_-1_-1_1~0_3_4_BTN4:_-1_-1_1~0_3_5_BTN5:_-1_-1_1~0_3_6_BTN6:_-1_-1_1")
 	msg = cs.recv(4096).decode('ascii').strip()
 	cs.send("110000")
 	msg = cs.recv(4096).decode('ascii').strip()
+  events = (u.ABS_X,u.ABS_Y,u.BTN_1,u.BTN_2,u.BTN_3,u.BTN_4,u.BTN_5,u.BTN_6)
+  d = u.Device(events)
 	while not msg == "QUITCONTROLLER":
 		try:
 			if msg[:3] == "BTN":
@@ -54,15 +49,18 @@ while True:
 				d.emit(u.ABS_X,int(float(l[1])*10000))
 				d.emit(u.ABS_Y,int(float(l[2])*10000))
 			if msg[:2] == "S:":
-				SO = msg[2:] == "1"
-			if msg[:7] == "DIALOG:":
-				print msg		
+				SO = msg[2:] == "1" 
 			msg = cs.recv(4096).decode('ascii').strip()
 		except ValueError:
 			msg = cs.recv(4096).decode('ascii').strip()
-			pass	
+			pass 
 	cs.close()
-	d.emit(u.ABS_X,0)
-	d.emit(u.ABS_Y,0)
+	del d
 
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind((socket.gethostbyname(socket.gethostname()),int(msg)))
+s.listen(1)
+while True:
+	(cs, addr) = s.accept()
+  thread.start_new_thread(connection, (cs))
 s.close()
