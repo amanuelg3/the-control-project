@@ -23,7 +23,7 @@ n = pn.Notification("Control Server Running", "You can now connect from your dev
 n.set_timeout(-1)
 n.show()
 
-def connection(cs):
+def connection(cs,this_is_only_here_because_otherwise_there_is_no_list):
 	msg = cs.recv(4096).decode('UTF-8').strip()
 	try:
 		if msg == "CL":
@@ -36,8 +36,8 @@ def connection(cs):
 			print(msg+"_"+msg2+"@")
 			cs.close()
 		elif msg[0:3] == "GL:":
-			s = socket.socket(socket.AF_INET, 	socket.SOCK_STREAM)
-			s.connect((socket.gethostbyname	(socket.gethostname()), int(msg[3:])))	
+			s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+			s.connect((socket.gethostbyname	(socket.gethostname()), int(msg[3:])))
 			while True:
 				read, write, err = select.select([s,cs],[],[],60)
 				if cs in read:
@@ -82,8 +82,9 @@ class localThread(threading.Thread):
 	def stop(self):
 		s.close()
         	self._stop.set()
-thread = localThread()
-thread.start()
+
+lthread = localThread()
+lthread.start()
 #Start the blutooth
 bs=bt.BluetoothSocket( bt.RFCOMM )
 bs.bind(("",bt.PORT_ANY))
@@ -96,7 +97,7 @@ print("Now listing")
 while True: # Main server loop
 	(cs, info) = bs.accept() #cs = cient socket
 	print("Accepted connection from "+str(info)+" with the content:")
-	thread.start_new_thread(connection, (cs))
+	thread.start_new_thread(connection, (cs,0))
 
 bs.close() #Close the socket
 thread.stop()

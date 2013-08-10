@@ -82,8 +82,8 @@ class localThread(threading.Thread):
 	def stop(self):
 		s.close()
         	self._stop.set()
-thread = localThread()
-thread.start()
+lthread = localThread()
+lthread.start()
 #Start the blutooth
 bs=bt.BluetoothSocket( bt.RFCOMM )
 bs.bind(("",bt.PORT_ANY))
@@ -96,7 +96,7 @@ print("Now listing")
 while True: # Main server loop
 	(cs, info) = bs.accept() #cs = cient socket
 	print("Accepted connection from "+str(info)+" with the content:")
-	thread.start_new_thread(connection, (cs))
+	thread.start_new_thread(connection, (cs,0))
 
 bs.close() #Close the socket
 thread.stop()

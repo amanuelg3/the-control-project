@@ -34,6 +34,10 @@ s.listen(1)
 while True:
 	su = False
 	(cs, addr) = s.accept()
+	try:
+		msg = cs.recv(4096).decode('ascii').strip()
+	except IOError:
+		pass	
 	while not msg == "QUITCONTROLLER":
 		try:
 			if msg == "SENDLAYOUT":
