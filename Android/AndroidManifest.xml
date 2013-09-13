@@ -19,7 +19,7 @@
     android:versionName="1.1" >
 
     <uses-sdk
-        android:minSdkVersion="9"
+        android:minSdkVersion="15"
         android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.BLUETOOTH" >
@@ -45,7 +45,7 @@
         </activity>
         <activity
             android:name="com.samdroid.app.control.MainControler"
-            android:label="@string/title_activity_main_controler" android:theme="@style/AppBaseTheme">
+            android:label="@string/title_activity_main_controler" android:theme="@android:style/Theme.Holo.Light">
         </activity>
     </application>
 

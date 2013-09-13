@@ -38,6 +38,7 @@ def connection(cs,this_is_only_here_because_otherwise_there_is_no_list):
 		elif msg[0:3] == "GL:":
 			s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 			s.connect((socket.gethostbyname	(socket.gethostname()), int(msg[3:])))
+			cs.send("@connected@")
 			while True:
 				read, write, err = select.select([s,cs],[],[],60)
 				if cs in read:

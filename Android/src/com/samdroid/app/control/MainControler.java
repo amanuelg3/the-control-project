@@ -36,6 +36,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.view.Display;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
@@ -77,6 +80,7 @@ public class MainControler extends Activity implements SensorEventListener {
         float[] matrixR = new float[9];
         float[] matrixI = new float[9];
         float[] matrixValues = new float[3];
+        float[] diff = new float[3];
         
         public static final int[] avIcons = {R.drawable.av_add_to_queue,R.drawable.av_download,R.drawable.av_fast_forward,R.drawable.av_full_screen,
                 R.drawable.av_make_available_offline,R.drawable.av_next,R.drawable.av_pause,R.drawable.av_pause_over_video,R.drawable.av_play,
@@ -85,6 +89,28 @@ public class MainControler extends Activity implements SensorEventListener {
                 R.drawable.av_volume_down,R.drawable.av_volume_up};
         public static final int[] navIcons = {R.drawable.navigation_accept,R.drawable.navigation_back,R.drawable.navigation_cancel,
                 R.drawable.navigation_forward,R.drawable.navigation_next_item,R.drawable.navigation_previous_item,R.drawable.navigation_refresh};
+        
+        @Override
+        public boolean onCreateOptionsMenu(Menu menu) {
+            // Inflate the menu items for use in the action bar
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.main_conroller_actionbar, menu);
+            return super.onCreateOptionsMenu(menu);
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            // Handle presses on the action bar items
+            switch (item.getItemId()) {
+                case R.id.rot_reset:
+                	Log.e("action","bar");
+                    diff = matrixValues.clone();
+                    Log.e("diff0", Float.toString(diff[0]));
+                    return true;
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
+        }
         
         private AdapterView.OnItemClickListener oicL = new AdapterView.OnItemClickListener() {
                 @Override
@@ -206,10 +232,10 @@ public class MainControler extends Activity implements SensorEventListener {
         //Log.d("RECV!!", ""+b);
         byte[] buffer = new byte[4096];
         in.read(buffer);
-                String msg = new String(buffer, "UTF-8");
-                msg = msg.substring(0,msg.indexOf("@"));
-                Log.i("MSG", msg);
-                return msg;
+        String msg = new String(buffer, "UTF-8");
+        msg = msg.substring(0,msg.indexOf("@"));
+        Log.i("MSG", msg);
+        return msg;
         
     }
     
@@ -223,6 +249,7 @@ public class MainControler extends Activity implements SensorEventListener {
                         in = s.getInputStream();
                         out.write(("GL:"+cd).getBytes("UTF-8"));
                         safeRead();
+                        Log.i("msg", "Connected Message");
                         setupLayout(true);
                         CONNECTED  = true;
                         Log.i("MF", "Connected");
@@ -242,7 +269,7 @@ public class MainControler extends Activity implements SensorEventListener {
                         Orientation = Integer.parseInt(safeRead());
                         setRequestedOrientation(Orientation);//Land = 0  Port = 1
                         out.write("SetOrentation".getBytes("UTF-8"));
-                        
+                        Log.e("msg", "nowReading");
                         String msg = safeRead();
                         if (msg != "NONE") {
                         String[] insL = msg.split("~");
@@ -512,18 +539,18 @@ public class MainControler extends Activity implements SensorEventListener {
                                         if(success){
                                         	   SensorManager.getOrientation(matrixR, matrixValues);
                                         	     
-                                        	   double azimuth = Math.toDegrees(matrixValues[0]);
+                                        	   double yaw = Math.toDegrees(matrixValues[0]);
                                         	   double pitch = Math.toDegrees(matrixValues[1]);
                                         	   double roll = Math.toDegrees(matrixValues[2]);
 
                                         	   if (sens[3]) {
-                                               		msg1 = msg1 + ":" + roll;
+                                               		msg1 = msg1 + ":" + (roll-Math.toDegrees(diff[2]));
                                         	   }
                                         	   if (sens[4]) {
-                                        		   msg1 = msg1 + ":" + pitch;
+                                        		   msg1 = msg1 + ":" + (pitch-Math.toDegrees(diff[1]));
                                         	   }
                                         	   if (sens[5]) {
-                                        		   msg1 = msg1 + ":" + azimuth;
+                                        		   msg1 = msg1 + ":" + (yaw-Math.toDegrees(diff[0]));
                                         	   }
                                         	   out.write((msg1+"\n").getBytes("UTF-8"));
                                 } 

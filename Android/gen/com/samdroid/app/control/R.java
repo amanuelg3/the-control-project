@@ -64,8 +64,9 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int navigation_next_item=0x7f02001c;
         public static final int navigation_previous_item=0x7f02001d;
         public static final int navigation_refresh=0x7f02001e;
-        public static final int scrubber_control_normal_holo=0x7f02001f;
-        public static final int scrubber_control_pressed_holo=0x7f020020;
+        public static final int rot_reset=0x7f02001f;
+        public static final int scrubber_control_normal_holo=0x7f020020;
+        public static final int scrubber_control_pressed_holo=0x7f020021;
     }
     public static final class id {
         public static final int LL1=0x7f090004;
@@ -73,6 +74,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int fullscreen_content=0x7f090003;
         public static final int listView1=0x7f090002;
         public static final int menu_settings=0x7f090005;
+        public static final int rot_reset=0x7f090006;
         public static final int textView1=0x7f090000;
     }
     public static final class layout {
@@ -81,7 +83,8 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
     }
     public static final class menu {
         public static final int a_blue_selecter=0x7f080000;
-        public static final int main_controler=0x7f080001;
+        public static final int main_conroller_actionbar=0x7f080001;
+        public static final int main_controler=0x7f080002;
     }
     public static final class string {
         public static final int BTN_1=0x7f060008;
@@ -101,6 +104,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int dummy_content=0x7f060001;
         public static final int hello_world=0x7f060003;
         public static final int menu_settings=0x7f060004;
+        public static final int rot_reset=0x7f060013;
         public static final int title_activity_blue_selecter=0x7f060005;
         public static final int title_activity_main_controler=0x7f060012;
     }
