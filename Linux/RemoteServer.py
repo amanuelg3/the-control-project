@@ -76,10 +76,11 @@ class localThread(threading.Thread):
 			cl = ""
 			for i in localApps:
 				cl = cl + i[0] + ", "
-			n.update("Control Server Running", "You can now connect from your device\n\n<b>"+str(len(localApps))+" Active Controlers</b>\n"+cl[:-2], "/etc/control/icon.png")
-			n.set_urgency(pn.URGENCY_LOW)
-			n.set_timeout(-1)
-			n.show()
+			if not (msg == 'Mouse' or msg == 'Media' or msg == 'Gaming'):
+				n.update(msg+" Controller Started", "You can now connect from your device", "/etc/control/icon.png")
+				n.set_urgency(pn.URGENCY_LOW)
+				n.set_timeout(-1)
+				n.show()
 	def stop(self):
 		s.close()
         	self._stop.set()
