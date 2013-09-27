@@ -13,10 +13,13 @@
 #You should have received a copy of the GNU General Public License
 #along with Control.  If not, see <http://www.gnu.org/licenses/>.
 
+from ballontip import *
 import bluetooth as bt
 import threading, socket, select
 
 localApps = []
+ballon_tip('Control Server Started','You can now connect your device')
+
 
 class localThread(threading.Thread):
 	def __init__(self):
@@ -34,6 +37,8 @@ class localThread(threading.Thread):
 			localApps.append((msg,nextPort))
 			print(str((msg,nextPort)))
 			nextPort+=1
+			if not (msg == 'Mouse' or msg == 'Media' or msg == 'Gaming'):
+				ballon_tip(msg+" Controller Started","You can now connect from your device")
 	def stop(self):
 		s.close()
         	self._stop.set()
@@ -64,6 +69,7 @@ def connection(cs):
 		elif msg[0:3] == "GL:":
 			s = socket.socket(socket.AF_INET, 	socket.SOCK_STREAM)
 			s.connect((socket.gethostbyname	(socket.gethostname()), int(msg[3:])))	
+			cs.send("@connected@")
 			while True:
 				read, write, err = select.select([s,cs],[],[],60)
 				if cs in read:

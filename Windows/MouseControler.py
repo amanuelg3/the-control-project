@@ -13,9 +13,7 @@
 #You should have received a copy of the GNU General Public License
 #along with Control.  If not, see <http://www.gnu.org/licenses/>.
 
-import socket
-import win32api
-import win32con
+import socket, win32api, win32con, thread
 
 inform = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 inform.connect((socket.gethostbyname(socket.gethostname()),3334))
@@ -24,12 +22,8 @@ msg = inform.recv(4096).decode('ascii').strip()
 print "|"+msg+"|  <-- Port No."
 inform.close()
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((socket.gethostbyname(socket.gethostname()),int(msg)))
-s.listen(1)
-while True:
-        try:
-                (cs, addr) = s.accept()
+def connection(cs, this_is_only_here_for_no_reason):
+	try:
                 while not msg == "QUITCONTROLLER":
         		try:
 				if msg == "SENDLAYOUT":
@@ -70,5 +64,12 @@ while True:
         except IOError:
                 cs.close()
         cs.close()
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind((socket.gethostbyname(socket.gethostname()),int(msg)))
+s.listen(1)
+while True:
+        (cs, addr) = s.accept()
+	thread.start_new_thread(connection,(cs,0))
 
 s.close()
