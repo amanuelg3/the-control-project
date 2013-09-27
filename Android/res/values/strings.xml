@@ -21,5 +21,7 @@
     <string name="JOYSTICK_MIN">-35000</string>
     <string name="title_activity_main_controler">MainControler</string>
     <string name="rot_reset">Center Rotation Here</string>
+    <string name="refresh">Refresh</string>
+    <string name="help">Help</string>
 
 </resources>

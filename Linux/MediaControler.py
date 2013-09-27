@@ -13,7 +13,7 @@
 #You should have received a copy of the GNU General Public License
 #along with Control.  If not, see <http://www.gnu.org/licenses/>.
 
-import socket
+import socket, thread
 import uinput as u
 
 events = (u.KEY_PLAYPAUSE,u.KEY_PREVIOUS,u.KEY_NEXT,u.KEY_FASTFORWARD,u.KEY_REWIND,u.KEY_STOP,u.KEY_VOLUMEUP,u.KEY_VOLUMEDOWN)
@@ -29,9 +29,10 @@ inform.close()
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((socket.gethostbyname(socket.gethostname()),int(msg)))
 s.listen(1)
-while True:
+
+def connection(cs, this_is_only_here_for_no_reason):
 	SO = True
-	(cs, addr) = s.accept()
+	msg = cs.recv(4096).decode('ascii').strip()
 	while not msg == "QUITCONTROLLER":
 		try:
 			if msg == "SENDLAYOUT":
@@ -63,4 +64,7 @@ while True:
 			pass	
 	cs.close()
 
+while True:
+	(cs, addr) = s.accept()
+	thread.start_new_thread(connection,(cs,0))
 s.close()

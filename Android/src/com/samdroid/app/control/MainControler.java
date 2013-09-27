@@ -30,7 +30,6 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.DialogInterface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -81,6 +80,11 @@ public class MainControler extends Activity implements SensorEventListener {
         float[] matrixI = new float[9];
         float[] matrixValues = new float[3];
         float[] diff = new float[3];
+        boolean needsCenter = true;
+        MenuItem gyroIcon;
+        String name = "Conrtrol";
+        boolean doGyro = true; boolean mab = false;
+        
         
         public static final int[] avIcons = {R.drawable.av_add_to_queue,R.drawable.av_download,R.drawable.av_fast_forward,R.drawable.av_full_screen,
                 R.drawable.av_make_available_offline,R.drawable.av_next,R.drawable.av_pause,R.drawable.av_pause_over_video,R.drawable.av_play,
@@ -95,6 +99,9 @@ public class MainControler extends Activity implements SensorEventListener {
             // Inflate the menu items for use in the action bar
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.main_conroller_actionbar, menu);
+            gyroIcon = menu.findItem(R.id.rot_reset);
+            if (doGyro == false){gyroIcon.setVisible(false);}
+            mab = true;
             return super.onCreateOptionsMenu(menu);
         }
 
@@ -361,13 +368,13 @@ public class MainControler extends Activity implements SensorEventListener {
                                         btn.setLayoutParams(params);
                                         lla[Integer.parseInt(ins[1])].addView(btn);
                                 }else if (Integer.parseInt(ins[0]) == 8) {
-                                	TextView tv = new TextView(getApplicationContext());
-                                	tv.setText(ins[2]);
-                                	tv.setTextSize(Float.parseFloat(ins[3]));
-                                	tv.setTypeface(android.graphics.Typeface.DEFAULT, Integer.parseInt(ins[4])); //1 for Bold, 0 for normal
-                                	LinearLayout.LayoutParams params = new LinearLayout.LayoutParams((int)(Integer.parseInt(ins[5])*density),(int)(Integer.parseInt(ins[6])*density),Float.parseFloat(ins[7]));
-                                	tv.setLayoutParams(params);
-                                    lla[Integer.parseInt(ins[1])].addView(tv);
+                                		TextView tv = new TextView(getApplicationContext());
+                                		tv.setText(ins[2]);
+                                		tv.setTextSize(Float.parseFloat(ins[3]));
+                                		tv.setTypeface(android.graphics.Typeface.DEFAULT, Integer.parseInt(ins[4])); //1 for Bold, 0 for normal
+                                		LinearLayout.LayoutParams params = new LinearLayout.LayoutParams((int)(Integer.parseInt(ins[5])*density),(int)(Integer.parseInt(ins[6])*density),Float.parseFloat(ins[7]));
+                                		tv.setLayoutParams(params);
+                                		lla[Integer.parseInt(ins[1])].addView(tv);
                                 } else {
                                         Log.i("View", "FAKE INSTRUCTION: "+insR);
                         }}}
@@ -393,12 +400,16 @@ public class MainControler extends Activity implements SensorEventListener {
                                 gyro = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
                                 acc = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
                                 Log.i("Sensor","Added FakeGyro");
+                        } else {
+                        	if (mab) {
+                        		gyroIcon.setVisible(false);
+                        	}
+                        	doGyro = false;
                         }
                         if (sens[6]|| sens[7] || sens[8]) {
-                            linacc = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+                        	linacc = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
                             Log.i("Sensor","Added LinAcc");
                         }
-                        
                         LayoutMade = true;
                         out.write("LayoutFullyMade".getBytes("UTF-8"));
                         }catch (IOException e) {
@@ -415,7 +426,10 @@ public class MainControler extends Activity implements SensorEventListener {
                 
                 Bundle b = getIntent().getExtras();
                 btaddr = b.getString("btAddr");
-                cd = b.getString("chosenDevice");
+                cd = b.getStringArray("portList")[b.getInt("chosenIndex")];
+                
+                name = b.getStringArray("nameList")[b.getInt("chosenIndex")];
+                
                 setupMF(btaddr);
 
                 dis = ((WindowManager)getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
@@ -441,6 +455,10 @@ public class MainControler extends Activity implements SensorEventListener {
         protected void onResume() {
         super.onResume();
         Log.i("ON","Resume");
+        
+        setTitle(name);
+        getActionBar().setIcon(R.drawable.ic_launcher);
+        
         if (sens[0]|| sens[1] || sens[2]) {
                 sm.registerListener(this, acc, SensorManager.SENSOR_DELAY_NORMAL);
         }
@@ -525,7 +543,6 @@ public class MainControler extends Activity implements SensorEventListener {
                                         if (sens[0] | sens[1] | sens[2]) {
                                         	out.write((msg+"\n").getBytes("UTF-8"));
                                         }
-                                        //Log.i("gyro","acc");
                                         prevacc = event.values;
                                 }
                                 if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
@@ -538,11 +555,9 @@ public class MainControler extends Activity implements SensorEventListener {
                                         }
                                         if(success){
                                         	   SensorManager.getOrientation(matrixR, matrixValues);
-                                        	     
                                         	   double yaw = Math.toDegrees(matrixValues[0]);
                                         	   double pitch = Math.toDegrees(matrixValues[1]);
                                         	   double roll = Math.toDegrees(matrixValues[2]);
-
                                         	   if (sens[3]) {
                                                		msg1 = msg1 + ":" + (roll-Math.toDegrees(diff[2]));
                                         	   }
@@ -553,40 +568,41 @@ public class MainControler extends Activity implements SensorEventListener {
                                         		   msg1 = msg1 + ":" + (yaw-Math.toDegrees(diff[0]));
                                         	   }
                                         	   out.write((msg1+"\n").getBytes("UTF-8"));
-                                } 
+                                        }
+                                }
                                 if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-                                String msg2 = "LinAcc";
-                                float x = 0,y = 0;
-                                switch (dis.getRotation()) {
-                                	case Surface.ROTATION_0:
-                                		x = event.values[0];
-                                		y = event.values[1];
-                                		break;
-                                	case Surface.ROTATION_90:
-                                		x = -event.values[1];
-                                		y = event.values[0];
-                                		break;
-                                	case Surface.ROTATION_180:
-                                		x = -event.values[0];
-                                		y = -event.values[1];
-                                		break;
-                                	case Surface.ROTATION_270:
-                                		x = event.values[1];
-                                		y = -event.values[0];
-                                		break;
-                                }
-                                if (sens[0]) {
-                                        msg2 = msg2 + ":" + x;
-                                }
-                                if (sens[1]) {
+                                	String msg2 = "LinAcc";
+                                	float x = 0,y = 0;
+                                	switch (dis.getRotation()) {
+                                		case Surface.ROTATION_0:
+                                			x = event.values[0];
+                                			y = event.values[1];
+                                			break;
+                                		case Surface.ROTATION_90:
+                                			x = -event.values[1];
+                                			y = event.values[0];
+                                			break;
+                                		case Surface.ROTATION_180:
+                                			x = -event.values[0];
+                                			y = -event.values[1];
+                                			break;
+                                		case Surface.ROTATION_270:
+                                			x = event.values[1];
+                                			y = -event.values[0];
+                                			break;
+                                	}
+                                	if (sens[6]) {
+                                		msg2 = msg2 + ":" + x;
+                                	}
+                                	if (sens[7]) {
                                         msg2 = msg2 + ":" + y;
-                                }
-                                if (sens[2]) {
+                                	}
+                                	if (sens[8]) {
                                         msg2 = msg2 + ":" + event.values[2];
+                                	}
+                                	//Log.i("LINACC", msg);
+                                	out.write((msg2+"\n").getBytes("UTF-8"));
                                 }
-                                //Log.i("LINACC", msg);
-                                out.write((msg2+"\n").getBytes("UTF-8"));
-                        }}
                         } catch (IOException e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();

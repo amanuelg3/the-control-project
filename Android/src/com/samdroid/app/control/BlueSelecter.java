@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -34,6 +35,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -56,6 +61,32 @@ public class BlueSelecter extends Activity {
 	String cd;
 	ArrayAdapter<String> dArrayAdapter;
 	BroadcastReceiver bReceiver;
+	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.control_ab_blue_selecter , menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.refresh:
+            	dArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1); 
+  		      	findPairedBluetoothDevices();
+  		      	blueAdapter.startDiscovery();
+  		      	return true;
+            case R.id.help_item:
+            	Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://code.google.com/p/the-control-project/wiki/Help"));
+            	startActivity(i);
+            	return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 	
 	protected void onActivityResult (int rqc, int rc, Intent data) {
 		if (rqc == 1) {
@@ -82,7 +113,7 @@ public class BlueSelecter extends Activity {
 			out.write("CL".getBytes("UTF-8"));
 			
 			in.read(buffer);
-			String msg = new String (buffer, "UTF-8");
+			String msg = new String(buffer, "UTF-8");
 			msg = msg.substring(0,msg.indexOf("@"));
 			String[] msg2 = msg.split("_"); 
 			//Log.i("MSG", msg);
@@ -93,8 +124,9 @@ public class BlueSelecter extends Activity {
 			builder.setTitle("Pick A Controller");
 			builder.setAdapter(adapter, new DialogInterface.OnClickListener(){
 	               public void onClick(DialogInterface dialog, int which) {
-	            	  cd = adp[which];
-	            	  b.putString("chosenDevice", cd);
+	            	  b.putInt("chosenIndex", which);
+	            	  b.putStringArray("portList", adp);
+	            	  b.putStringArray("nameList", adn);
 					  Intent i = new Intent(getApplicationContext(), MainControler.class);
 	      	   		  i.putExtras(b);
 	      	   		  try {
@@ -167,14 +199,7 @@ public class BlueSelecter extends Activity {
 		  blueAdapter.startDiscovery();
 		  findPairedBluetoothDevices();
 			
-		  ImageButton btnSearch = (ImageButton) findViewById(R.id.btnSearch1);
-		  btnSearch.setOnClickListener(new OnClickListener(){
-		    public void onClick(View view) {
-		      dArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1); 
-		      findPairedBluetoothDevices();
-		      blueAdapter.startDiscovery();
-		    }
-		  });
+		  
 		  ListView pairedDevicesListView = (ListView) findViewById(R.id.listView1);
 		  pairedDevicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			  public void onItemClick(AdapterView<?> parent,View view,int position,long id) {

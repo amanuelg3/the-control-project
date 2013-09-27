@@ -13,7 +13,7 @@
 #You should have received a copy of the GNU General Public License
 #along with Control.  If not, see <http://www.gnu.org/licenses/>.
 
-import socket, time
+import socket, time, thread
 import uinput as u
 
 time.sleep(2)
@@ -31,31 +31,23 @@ inform.close()
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((socket.gethostbyname(socket.gethostname()),int(msg)))
 s.listen(1)
-while True:
-	su = False
-	(cs, addr) = s.accept()
-	try:
-		msg = cs.recv(4096).decode('ascii').strip()
-	except IOError:
-		pass	
+def connection(cs, this_is_only_here_to_make_it_a_truple):
+	msg = cs.recv(4096).decode('ascii').strip()	
 	while not msg == "QUITCONTROLLER":
 		try:
-			print(msg)
+			#print(msg)
 			if msg == "SENDLAYOUT":
 				cs.send("1")
 				msg = cs.recv(4096).decode('ascii').strip()
 				cs.send("0_0_\n\n\nLeft\n\n\n_L:_-2_-2_1~1_0_1_3_-2_-2_0.1~0_1_\n\n _U:_-1_-2_0~0_1_\n\n _D:_-1_-2_0~0_0_\n\n\nRight\n\n\n_R:_-2_-2_1")
 				msg = cs.recv(4096).decode('ascii').strip()
-				cs.send("000000110")
+				cs.send("110000000")
 				msg = cs.recv(4096).decode('ascii').strip()
-			if msg[:4] == "LinAcc:":
+			if "Acc:" in msg:
+				print(msg)
 				l = msg.split(":")
-				if su:
-					d.emit(u.REL_X,int((-(float(l[1])))*2))
-					d.emit(u.REL_Y,int(float(l[2])*2))
-				else:
-					d.emit(u.REL_X,int((-(float(l[1])))*1))
-					d.emit(u.REL_Y,int(float(l[2])*1))
+				d.emit(u.REL_X,int(-(float(l[1]))*2))
+				d.emit(u.REL_Y,int((float(l[2]))*2))
 			if msg[:2] == "L:":
 				d.emit(u.BTN_LEFT,int(msg[2:3]))
 			if msg[:2] == "R:":
@@ -72,4 +64,7 @@ while True:
 			pass	
 	cs.close()
 
+while True:
+	(cs, addr) = s.accept()
+	thread.start_new_thread(connection,(cs,0))
 s.close()

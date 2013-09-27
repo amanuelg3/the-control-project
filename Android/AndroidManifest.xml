@@ -45,7 +45,7 @@
         </activity>
         <activity
             android:name="com.samdroid.app.control.MainControler"
-            android:label="@string/title_activity_main_controler" android:theme="@android:style/Theme.Holo.Light">
+            android:label="@string/title_activity_main_controler" android:theme="@style/AppBaseTheme">
         </activity>
     </application>
 
