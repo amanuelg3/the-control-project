@@ -15,48 +15,44 @@
 
 import socket, win32api, win32con, thread
 
+def keyPress(key,msg):
+        if msg[5:6] == "1":
+                win32api.keybd_event(key,0,0,0)
+        else:
+               win32api.keybd_event(key,0,win32con.KEYEVENTF_KEYUP,0) 
+
 inform = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 inform.connect((socket.gethostbyname(socket.gethostname()),3334))
-inform.send("Mouse")
+inform.send("Media")
 msg = inform.recv(4096).decode('ascii').strip()
 print "|"+msg+"|  <-- Port No."
 inform.close()
 
+
 def connection(cs, this_is_only_here_for_no_reason):
 	try:
+		SO = True
 		while not msg == "QUITCONTROLLER":
 			try:
 				if msg == "SENDLAYOUT":
 					cs.send("1")
 					msg = cs.recv(4096).decode('ascii').strip()
-					cs.send("0_0_\n\n\nLeft\n\n\n_L:_-2_-2_1~1_0_1_3_-2_-2_0.1~0_1_\n\n _U:_-1_-2_0~0_1_\n\n _D:_-1_-2_0~0_0_\n\n\nRight\n\n\n_R:_-2_-2_1")
+					cs.send("1_0_1_3_-1_-1_1~7_1_0_10_Play:_-1_-2_2~1_1_0_0_-1_-2_1~7_2_0_11_Prev:_-2_-2_1~7_2_0_5_Next:_-2_-2_1~1_1_0_0_-1_-2_2~7_3_0_19_VolD:_-2_-2_1~7_3_0_17_Stop:_-2_-2_1~7_3_0_20_VolU:_-2_-2_1")
 					msg = cs.recv(4096).decode('ascii').strip()
-					cs.send("110000")
+					cs.send("000000")
 					msg = cs.recv(4096).decode('ascii').strip()
-				if msg[:4] == "Acc:":
-					l = msg.split(":")
-					x, y = win32api.GetCursorPos()
-					x+=int((-(float(l[1])))*1)
-					y+=int(float(l[2])*1)
-					win32api.SetCursorPos((x,y))
-				if msg[:2] == "L:":
-					x, y = win32api.GetCursorPos()
-					if msg[2:3] == "1":
-						win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
-					if msg[2:3] == "0":
-						win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,x,y,0,0)
-				if msg[:2] == "R:":
-					x, y = win32api.GetCursorPos()
-					if msg[2:3] == "1":
-						win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,x,y,0,0)
-					if msg[2:3] == "0":
-						win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,x,y,0,0)
-				if msg[:2] == "U:":
-					x, y = win32api.GetCursorPos()
-					win32api.mouse_event(win32con.MOUSEEVENTF_WHEEL,x,y,int(msg[2:3])*win32con.WHEEL_DELTA,0)
-				if msg[:2] == "D:":
-					x, y = win32api.GetCursorPos()
-					win32api.mouse_event(win32con.MOUSEEVENTF_WHEEL,x,y,-(int(msg[2:3])*win32con.WHEEL_DELTA),0)
+				if msg[:5] == "Play:":
+					keyPress(win32con.VK_MEDIA_PLAY_PAUSE,msg)
+				if msg[:5] == "Prev:":
+					keyPress(win32con.VK_MEDIA_PREV_TRACK,msg)
+				if msg[:5] == "Next:":
+					keyPress(win32con.VK_MEDIA_NEXT_TRACK,msg)
+				if msg[:5] == "VolD:":
+					keyPress(win32con.VK_VOLUME_DOWN,msg)
+				if msg[:5] == "VolU:":
+					keyPress(win32con.VK_VOLUME_UP,msg)
+				if msg[:5] == "Stop:":
+					keyPress(178,msg)
 				msg = cs.recv(4096).decode('ascii').strip()
 			except ValueError:
 				msg = cs.recv(4096).decode('ascii').strip()
@@ -73,4 +69,3 @@ while True:
 	thread.start_new_thread(connection,(cs,0))
 
 s.close()
-

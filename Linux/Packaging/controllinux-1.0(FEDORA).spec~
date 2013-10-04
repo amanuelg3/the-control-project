@@ -8,7 +8,7 @@ Name: Control
 
 License: GPLv3
 
-Release: 3
+Release: 1
 
 Source: controllinux-%{version}.tar.gz
 

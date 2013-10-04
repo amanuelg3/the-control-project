@@ -213,7 +213,7 @@ def connection(css, nothing_at_all):
 					m = msg.split(":")
 					#print(m[0])
 					if msg[:4] == "PPB:":
-						if "0" in m[1]:
+						if "1" in m[1]:
 							paused = True
 						else:
 							paused = False

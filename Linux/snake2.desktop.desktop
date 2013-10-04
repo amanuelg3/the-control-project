@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon[en_US]=/etc/control/icon.png
+Name[en_US]=snake2.desktop
+Exec=cd /etc/control & python2 Snake.py
+Name=SNAKE!
+Icon=/etc/control/icon.png

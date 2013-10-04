@@ -1,0 +1,1 @@
+START /MIN C:\Python26\python.exe "Snake.py"

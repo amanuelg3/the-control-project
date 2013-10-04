@@ -13,63 +13,85 @@
 #You should have received a copy of the GNU General Public License
 #along with Control.  If not, see <http://www.gnu.org/licenses/>.
 
-import socket, win32api, win32con, thread
+from balloontip import *
+import bluetooth as bt
+import threading, thread, socket, select
 
-inform = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-inform.connect((socket.gethostbyname(socket.gethostname()),3334))
-inform.send("Mouse")
-msg = inform.recv(4096).decode('ascii').strip()
-print "|"+msg+"|  <-- Port No."
-inform.close()
+localApps = []
+thread.start_new_thread(balloon_tip,('Control Server Started','You can now connect your device'))
 
-def connection(cs, this_is_only_here_for_no_reason):
+
+class localThread(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+		
+	def run(self):
+		nextPort = 3335
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.bind((socket.gethostbyname(socket.gethostname()),3334))
+		s.listen(1)
+		while True:
+			(cs, addr) = s.accept()
+			msg = cs.recv(4096).decode('ascii').strip()
+			cs.send(str(nextPort))
+			localApps.append((msg,nextPort))
+			print(str((msg,nextPort)))
+			nextPort+=1
+			if not (msg == 'Mouse' or msg == 'Media' or msg == 'Gaming'):
+				thread.start_new_thread(balloon_tip,(msg+" Controller Started","You can now connect from your device"))
+	def stop(self):
+		s.close()
+		self._stop.set()
+
+lthread = localThread()
+lthread.start()
+#Start the blutooth
+bs=bt.BluetoothSocket( bt.RFCOMM )
+bs.bind(("",bt.PORT_ANY))
+bs.listen(1)
+port = bs.getsockname()[1]
+uuid = "0003"
+bt.advertise_service( bs, "ControlServerWindows", service_id = uuid, service_classes = [ uuid, bt.SERIAL_PORT_CLASS ], profiles = [ bt.SERIAL_PORT_PROFILE ])
+print("Now listing")
+
+def connection(cs,omg_lol):
+	msg = cs.recv(4096).decode('UTF-8').strip()
 	try:
-                while not msg == "QUITCONTROLLER":
-        		try:
-				if msg == "SENDLAYOUT":
-					cs.send("1")
-                			msg = cs.recv(4096).decode('ascii').strip()
-               				cs.send("0_0_\n\n\nLeft\n\n\n_L:_-2_-2_1~1_0_1_3_-2_-2_0.1~0_1_\n\n _U:_-1_-2_0~0_1_\n\n _D:_-1_-2_0~0_0_\n\n\nRight\n\n\n_R:_-2_-2_1")
-               				msg = cs.recv(4096).decode('ascii').strip()
-                			cs.send("110000")
-                			msg = cs.recv(4096).decode('ascii').strip()
-                		if msg[:4] == "Acc:":
-                        		l = msg.split(":")
-                                	x, y = win32api.GetCursorPos()
-                                        x+=int((-(float(l[1])))*1)
-        				y+=int(float(l[2])*1)
-                			win32api.SetCursorPos((x,y))
-                		if msg[:2] == "L:":
-        				x, y = win32api.GetCursorPos()
-        				if msg[2:3] == "1":
-                				win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,x,y,0,0)
-                        		if msg[2:3] == "0":
-                                		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,x,y,0,0)
-        			if msg[:2] == "R:":
-                			x, y = win32api.GetCursorPos()
-                        		if msg[2:3] == "1":
-                                		win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,x,y,0,0)
-                                        if msg[2:3] == "0":
-                                                win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,x,y,0,0)
-                        	if msg[:2] == "U:":
-                                	x, y = win32api.GetCursorPos()
-                                        win32api.mouse_event(win32con.MOUSEEVENTF_WHEEL,x,y,int(msg[2:3])*win32con.WHEEL_DELTA,0)
-                                if msg[:2] == "D:":
-                                        x, y = win32api.GetCursorPos()
-                                        win32api.mouse_event(win32con.MOUSEEVENTF_WHEEL,x,y,-(int(msg[2:3])*win32con.WHEEL_DELTA),0)
-                                msg = cs.recv(4096).decode('ascii').strip()
-                        except ValueError:
-                                msg = cs.recv(4096).decode('ascii').strip()
-                                pass
-        except IOError:
-                cs.close()
-        cs.close()
+		if msg == "CL":
+			msg = ""
+			msg2 = ""
+			for i in localApps:
+				msg = msg + i[0] + "~"
+				msg2 = msg2 + str(i[1]) + "~"
+			cs.send((msg+"_"+msg2+"@").encode('UTF-8'))
+			print(msg+"_"+msg2+"@")
+			cs.close()
+		elif msg[0:3] == "GL:":
+			s = socket.socket(socket.AF_INET, 	socket.SOCK_STREAM)
+			s.connect((socket.gethostbyname	(socket.gethostname()), int(msg[3:])))	
+			cs.send("@connected@")
+			while True:
+				read, write, err = select.select([s,cs],[],[],60)
+				if cs in read:
+					msg = cs.recv(4096).decode('UTF-8').strip()
+					s.send(msg)
+				if s in read:
+					msg = s.recv(4096).decode('UTF-8').strip()
+					if not msg == "":
+						cs.send("@"+msg+"@")
+					
+	except IOError:
+		print "IOE: Stopping Client"
+	cs.close()
+	try:
+		s.close()
+	except NameError:
+		pass
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((socket.gethostbyname(socket.gethostname()),int(msg)))
-s.listen(1)
-while True:
-        (cs, addr) = s.accept()
-	thread.start_new_thread(connection,(cs,0))
+while True: # Main server loop
+	(cs, info) = bs.accept() #cs = cient socket
+	print("Accepted connection from "+str(info)+" with the content:")
+	thread.start_new_thread(connection, (cs,0))
 
-s.close()
+bs.close() #Close the socket
+thread.stop()
