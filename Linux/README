@@ -1,0 +1,31 @@
+INSTALL INSTRUCTIONS - UBUNTU & CO
+~~ Also any other distros where the defult python is 3.x ~~
+
+Install PyBluz, Python-uinput and PyGlet
+
+Copy snake2.desktop & control.desktop to /usr/share/applications
+Copy the rest to /etc/control (You will need to make a new folder)
+Remove start.sh
+Rename start2.sh to start.sh
+
+So in the terminal: (Leaving the tar in ~/Downloads)
+
+su ~~OR~~ sudo bash
+cd Downloads
+mkdir ControlTemp
+mv Control1.1BetaLinux.tar.gz ControlTemp
+cd ControlTemp
+tar -xf Control1.1BetaLinux.tar.gz
+mv snake2.desktop /usr/share/applications
+mv control.desktop /usr/share/applications
+mkdir /etc/control
+mv ./* /etc/control
+rm /etc/control/start.sh
+mv /etc/contol/start2.sh /etc/control/start.sh
+
+INSTALL INSTRUCTIONS - OTHER LINUX
+
+Install PyBluz, Python-uinput and PyGlet
+
+Copy snake.desktop & control.desktop to /usr/share/applications
+Copy the rest to /etc/control (You will need to make a new folder)

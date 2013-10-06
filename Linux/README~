@@ -1,0 +1,16 @@
+INSTALL INSTRUCTIONS - UBUNTU & CO
+~~ Also any other distros where the defult python is 3.x ~~
+
+Install PyBluz, Python-uinput and PyGlet
+
+Copy snake2.desktop & control.desktop to /usr/share/applications
+Copy the rest to /etc/control (You will need to make a new folder)
+Remove start.sh
+Rename start2.sh to start.sh
+
+INSTALL INSTRUCTIONS - OTHER LINUX
+
+Install PyBluz, Python-uinput and PyGlet
+
+Copy snake.desktop & control.desktop to /usr/share/applications
+Copy the rest to /etc/control (You will need to make a new folder)
