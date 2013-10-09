@@ -146,6 +146,15 @@ class Analog_Stick():
 BOX_ACROSS = 0
 BOX_VERTICAL = 1
 
+GRAVITY_NONE = 0
+GRAVITY_BOTTOM = 80
+GRAVITY_TOP = 48
+GRAVITY_LEFT = 3
+GRAVITY_RIGHT = 5
+GRAVITY_CENTER = 17
+GRAVITY_HORIZONTAL_CENTER = 1
+GRAVITY_VERTICAL_CENTER = 16
+
 class Box():
 	def __init__(self, root, elementDirection, gravity, width=-1, height=-1, weight=1):
 		self.id = root.next_box()
