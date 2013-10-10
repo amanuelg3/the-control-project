@@ -25,10 +25,13 @@ class Controller_Instance():
 					msg = self.cs.recv(4096).decode('ascii').strip()
 					self.cs.send(bytes(str(self.layout.sensors),ENCODING))
 					msg = self.cs.recv(4096).decode('ascii').strip()
+				elif msg == "ONSTOP":
+					self.close()
 				elif msgList[0] in {"Acc", "Gyro", "LinAcc"}:
-					raise ValueError("Sensors not implimented")
+					f = self.layout.sensors.getFunc(msgList[0])
+					f(self,msgList[1:])
 				else:
-					f = self.parent.layout.getFunc(msgList[0])
+					f = self.layout.getFunc(msgList[0])
 					f(self,msgList[1:])
 				msgs+= self.cs.recv(4096).decode('ascii').strip().split('\n')
 		except OSError:
@@ -71,6 +74,11 @@ class Controller():
 		x = Controller_Instance(socket,self,id)
 		self.connections.append(x)
 		x.run()
+
+WIDTH_FILL = -1
+HEIGHT_FILL = -1
+WIDTH_FIT_CONTENT = -2
+HEIGHT_FIT_CONTENT = -2
 
 class Button():
 	def __init__ (self, root, content, func, width=-2, height=-2, weight=1):
@@ -146,6 +154,15 @@ class Analog_Stick():
 BOX_ACROSS = 0
 BOX_VERTICAL = 1
 
+GRAVITY_NONE = 0
+GRAVITY_BOTTOM = 80
+GRAVITY_TOP = 48
+GRAVITY_LEFT = 3
+GRAVITY_RIGHT = 5
+GRAVITY_CENTER = 17
+GRAVITY_HORIZONTAL_CENTER = 1
+GRAVITY_VERTICAL_CENTER = 16
+
 class Box():
 	def __init__(self, root, elementDirection, gravity, width=-1, height=-1, weight=1):
 		self.id = root.next_box()
@@ -172,9 +189,22 @@ SENSOR_MOTION_X = 6
 SENSOR_MOTION_Y = 7
 SENSOR_MOTION_Z = 8
 
+SENSOR_ACC = "Acc"
+SENSOR_GYRO = "Gyro"
+SENSOR_MOTION = "LinAcc"
+
 class Sensors():
 	def __init__(self,sl):
 		self.sensorsList = sl
+		self.fd = {}
+	def setFunc(self, func, types):
+		for i in types:
+			self.fd[i] = func
+	def getFunc(self,tag):
+		if tag in self.fd:
+			return self.fd[tag]
+		else:
+			raise ValueError("The tag {} is not found in this Sensor Object".format(tag))
 	def __str__(self):
 			string = list("0"*9)
 			for i in self.sensorsList:
