@@ -25,7 +25,7 @@ class Controller_Instance():
 					msg = self.cs.recv(4096).decode('ascii').strip()
 					self.cs.send(bytes(str(self.layout.sensors),ENCODING))
 					msg = self.cs.recv(4096).decode('ascii').strip()
-        elif msg == "ONSTOP":
+				elif msg == "ONSTOP":
 					self.close()
 				elif msgList[0] in {"Acc", "Gyro", "LinAcc"}:
 					raise ValueError("Sensors not implimented")
