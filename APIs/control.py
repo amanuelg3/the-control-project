@@ -74,6 +74,11 @@ class Controller():
 		self.connections.append(x)
 		x.run()
 
+WIDTH_FILL = -1
+HEIGHT_FILL = -1
+WIDTH_FIT_CONTENT = -2
+HEIGHT_FIT_CONTENT = -2
+
 class Button():
 	def __init__ (self, root, content, func, width=-2, height=-2, weight=1):
 		self.parentId = 0
