@@ -41,7 +41,7 @@ class Controller_Instance():
 					f = self.layout.getFunc(msgList[0])
 					f(self,msgList[1:])
 				msgs+= self.cs.recv(4096).decode('ascii').strip().split('\n')
-		except OSError:
+		except OSError, socket.error:
 			self.close()
 			return
 	def changeLayout(self,newLayout):
